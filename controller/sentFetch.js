@@ -30,30 +30,8 @@ const fetchSentEmails = async () => {
         const messages = await connection.search(searchCriteria, fetchOptions);
 
         // Process each email
-        messages.forEach(async (item) => {
-            const headerParts = _.find(item.parts, { "which": "HEADER" });
-            if (headerParts && headerParts.body) {
-                const headers = imaps.getParts(headerParts).join('\r\n'); // Convert to string
-
-                console.log('Raw Headers:', headers); // Debug statement
-
-                // Create a MailParser instance
-                const mailparser = new MailParser();
-
-                // Write headers to mailparser
-                mailparser.write(headers);
-                mailparser.end();
-
-                // Get parsed email headers
-                mailparser.on('headers', parsedHeaders => {
-                    console.log('Parsed Email Headers:', parsedHeaders);
-                });
-
-                // Get parsed email content
-                mailparser.on('end', parsedEmail => {
-                    console.log('Parsed Email:', parsedEmail);
-                });
-            }
+        messages.forEach(async (item,key) => {
+           console.log(key)
         });
 
         // Close the connection
