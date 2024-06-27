@@ -32,4 +32,8 @@ lmtp      unix  -       -       n       -       -       lmtp
 
 
 
+main.cf -- for secure
+
+et  n       -       y       -       -       smtpd
+  -o smtpd_tls_wrappermode=yes
 
