@@ -1,0 +1,35 @@
+config
+
+# For example, on Ubuntu
+sudo apt-get update
+sudo apt-get install dovecot-core dovecot-imapd
+
+
+#Open Dovecot's configuration file (/etc/dovecot/dovecot.conf or /etc/dovecot/conf.d/10-mail.conf) and make sure it includes LMTP configuration:  
+  
+# Add LMTP configuration to enable storing sent emails
+service lmtp {
+  unix_listener lmtp {
+    mode = 0666
+  }
+}
+protocol lmtp {
+  mail_plugins = $mail_plugins sieve
+}
+
+
+// Not tested --> risky
+mail_location = maildir:~/Maildir
+
+
+
+#Postfix should be configured to use Dovecot's LMTP socket for delivering outgoing emails. This involves configuring Postfix’s master.cf to include LMTP service and set up appropriate delivery:
+# Example configuration in /etc/postfix/master.cf
+lmtp      unix  -       -       n       -       -       lmtp
+    -o lmtp_data_done_timeout=1200
+    -o lmtp_send_xforward_command=yes
+    -o disable_dns_lookups=yes
+
+
+
+
