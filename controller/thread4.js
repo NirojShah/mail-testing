@@ -27,13 +27,14 @@ async function fetchAllEmailsGroupedBySubject() {
 
         // Group emails by subject
         const groupedEmails = messages.reduce((acc, message) => {
-            const subject = message.parts[0].body.subject[0];
+            const header = message.parts.find(part => part.which === 'HEADER').body;
+            const subject = header.subject[0];
             if (!acc[subject]) {
                 acc[subject] = [];
             }
             acc[subject].push({
                 uid: message.attributes.uid,
-                from: message.parts[0].body.from[0],
+                from: header.from[0],
                 date: message.attributes.date
             });
             return acc;
@@ -62,13 +63,25 @@ async function fetchThreadDetails(uid) {
         const messages = await connection.search(searchCriteria, fetchOptions);
 
         // Process messages and extract required data (like subject, from, text, html, etc.)
-        const threadDetails = messages.map(message => ({
-            uid: message.attributes.uid,
-            subject: message.parts[0].body.subject[0],
-            from: message.parts[0].body.from[0],
-            text: message.parts[1].body,
-            html: message.parts[2].body,
-            date: message.attributes.date
+        const threadDetails = await Promise.all(messages.map(async message => {
+            const headerPart = message.parts.find(part => part.which === 'HEADER');
+            const textPart = message.parts.find(part => part.which === 'TEXT');
+
+            if (!headerPart || !textPart) {
+                throw new Error('Missing header or text part in the message.');
+            }
+
+            const header = headerPart.body;
+            const parsedEmail = await simpleParser(textPart.body);
+
+            return {
+                uid: message.attributes.uid,
+                subject: header.subject[0],
+                from: header.from[0],
+                text: parsedEmail.text,
+                html: parsedEmail.html,
+                date: message.attributes.date
+            };
         }));
 
         await connection.end();
@@ -79,13 +92,13 @@ async function fetchThreadDetails(uid) {
     }
 }
 
-// fetchAllEmailsGroupedBySubject().then((data)=>{
-//     console.log(data)
-// })
+// Example Usage
+fetchAllEmailsGroupedBySubject().then((data) => {
+    console.log(data);
+});
 
-fetchThreadDetails(8).then((data)=>{
-    console.log(data)
-})
-
+fetchThreadDetails(8).then((data) => {
+    console.log(data);
+});
 
 // module.exports = { fetchAllEmailsGroupedBySubject, fetchThreadDetails };
