@@ -4,9 +4,9 @@ const nodemailer = require('nodemailer');
 
 const config = {
     imap: {
-        user: 'dev',
-        password: 'test1234',
-        host: '192.168.15.90',
+        user: 'niraj',
+        password: 'qugates123',
+        host: '192.168.56.63',
         port: 143,
         tls: false,
     }
@@ -21,13 +21,12 @@ async function replyToEmail() {
         await connection.openBox('Sent');
 
         // Replace with the UID of the email you want to reply to
-        const emailUID = '7';
+        const emailUID = 2;
 
         // Fetch the email using UID
-        const searchCriteria = [['UID', emailUID]];
+        const searchCriteria = [['UID', 16]];
         const fetchOptions = {
             bodies: [''],
-            struct: true
         };
 
         console.log("Fetching email...");
@@ -49,7 +48,7 @@ async function replyToEmail() {
         const parsedEmail = await simpleParser(emailContent);
 
         // Print parsed email for debugging
-        console.log('Parsed Email:', parsedEmail);
+        console.log('Parsed Email:', parsedEmail.subject);
 
         // Validate parsedEmail.from
         if (!parsedEmail.from || !parsedEmail.from.text || parsedEmail.from.text.length === 0) {
@@ -58,11 +57,11 @@ async function replyToEmail() {
 
         // Setup SMTP transporter
         const transporter = nodemailer.createTransport({
-            host: '192.168.15.90',
+            host: '192.168.56.63',
             port: 25,
             auth: {
-                user: 'dev@qugates.com',
-                pass: 'test1234'
+                user: 'niraj@qugates.com',
+                pass: 'qugates123'
             },
             tls: {
                 rejectUnauthorized: false
@@ -70,15 +69,20 @@ async function replyToEmail() {
         });
 
         // Setup email reply options
-        const replyMailOptions = {
-            from: 'dev@qugates.com',
-            to: parsedEmail.from.text,
-            subject: `Re: ${parsedEmail.subject}`,
-            text: 'i am the reply message from the server',
-            html: '<p>Your reply message here...</p>',
-            inReplyTo: parsedEmail.messageId,
-            references: parsedEmail.messageId
-        };
+        // Extract the existing "Re: " prefix from the original subject
+const rePrefix = parsedEmail.subject.startsWith('Re: ') ? '' : 'Re: ';
+
+// Setup email reply options
+const replyMailOptions = {
+    from: 'niraj@qugates.com',
+    to: parsedEmail.from.text,
+    subject: `${rePrefix}${parsedEmail.subject}`,
+    text: 'Your reply message here...',
+    html: '<p>Your reply message here...</p>',
+    inReplyTo: parsedEmail.messageId,
+    references: parsedEmail.messageId
+};
+
 
         console.log("Sending reply...");
 
