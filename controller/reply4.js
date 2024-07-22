@@ -5,8 +5,8 @@ const nodemailer = require('nodemailer');
 const config = {
     imap: {
         user: 'dev',
-        password: 'test1234',
-        host: '192.168.15.90',
+        password: 'qugates123',
+        host: '192.168.135.63',
         port: 143,
         tls: false,
     }
